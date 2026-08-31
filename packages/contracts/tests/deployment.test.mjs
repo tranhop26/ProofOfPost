@@ -51,3 +51,8 @@ test("Vercel output directory is relative to the configured apps/web project roo
   const config = JSON.parse(readFileSync(new URL("../../../vercel.json", import.meta.url), "utf8"));
   assert.equal(config.outputDirectory, "dist");
 });
+
+test("Vercel serves SPA deep links from the configured apps/web project root", () => {
+  const config = JSON.parse(readFileSync(new URL("../../../apps/web/vercel.json", import.meta.url), "utf8"));
+  assert.deepEqual(config.rewrites, [{ source: "/(.*)", destination: "/index.html" }]);
+});
