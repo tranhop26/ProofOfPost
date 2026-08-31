@@ -1,0 +1,1 @@
+{"root":["./src/vite-env.d.ts","./src/lib/contract.test.ts","./src/lib/contract.ts","./src/lib/genlayer.test.ts","./src/lib/genlayer.ts","./src/lib/wallet.test.tsx","./src/lib/wallet.tsx","./src/test/setup.ts"],"version":"5.9.3"}
