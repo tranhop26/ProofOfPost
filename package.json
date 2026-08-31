@@ -6,7 +6,9 @@
   "scripts": {
     "build": "pnpm --filter @proofofpost/shared build",
     "test": "pnpm -r --sequential test",
-    "test:shared": "pnpm --filter @proofofpost/shared test"
+    "test:contract": "pnpm --filter @proofofpost/contracts test",
+    "test:shared": "pnpm --filter @proofofpost/shared test",
+    "lint:genvm": "set PYTHONUTF8=1&& genvm-lint check packages/contracts/proof_of_post.py"
   },
   "packageManager": "pnpm@10.18.2"
 }
