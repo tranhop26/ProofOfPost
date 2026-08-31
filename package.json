@@ -1,0 +1,12 @@
+{
+  "name": "proof-of-post",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @proofofpost/shared build",
+    "test": "pnpm -r --sequential test",
+    "test:shared": "pnpm --filter @proofofpost/shared test"
+  },
+  "packageManager": "pnpm@10.18.2"
+}
