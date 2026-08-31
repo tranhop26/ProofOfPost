@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canResolve, canSettle, parseCampaign } from "./index";
+import contractShape from "../contract-shape.json";
 
 const rawCampaign = {
   id: "7",
@@ -55,4 +56,10 @@ describe("campaign state predicates", () => {
     expect(canSettle("PASSED")).toBe(true);
     expect(canSettle("FAILED")).toBe(false);
   });
+});
+
+it("parses the representative contract view without field drift", () => {
+  const parsed = parseCampaign(contractShape);
+  expect(parsed.id).toBe(7n);
+  expect(parsed.canonicalEvidenceUrl).toBe("https://creator.example/post");
 });

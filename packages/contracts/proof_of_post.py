@@ -487,3 +487,29 @@ Publication timestamp: {int(campaign.published_at)}; submission timestamp: {int(
             "completed_payouts": int(self.completed_payouts),
             "completed_refunds": int(self.completed_refunds),
         }
+
+    @gl.public.view
+    def get_campaign_count(self) -> u256:
+        return u256(int(self.next_campaign_id) - 1)
+
+    def _page_campaigns(self, ids: typing.Any, offset: u256, limit: u256) -> list[typing.Any]:
+        if ids is None:
+            return []
+        start = int(offset)
+        size = min(int(limit), 50)
+        if start < 0 or size <= 0:
+            return []
+        output: list[typing.Any] = []
+        for index in range(start, min(start + size, len(ids))):
+            item = self.get_campaign(ids[index])
+            if item is not None:
+                output.append(item)
+        return output
+
+    @gl.public.view
+    def get_sponsor_campaigns(self, sponsor: Address, offset: u256, limit: u256) -> list[typing.Any]:
+        return self._page_campaigns(self.sponsor_campaigns.get(sponsor), offset, limit)
+
+    @gl.public.view
+    def get_creator_campaigns(self, creator: Address, offset: u256, limit: u256) -> list[typing.Any]:
+        return self._page_campaigns(self.creator_campaigns.get(creator), offset, limit)
