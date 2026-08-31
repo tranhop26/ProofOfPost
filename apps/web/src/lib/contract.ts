@@ -133,6 +133,18 @@ export interface CreateCampaignInput {
 
 export interface WriteUiOptions extends ConfirmOptions { account: `0x${string}` }
 
+export type RecoveryAction = "expire_unaccepted" | "expire_unsubmitted" | "expire_unresolved";
+
+export function recoveryAction(campaign: Campaign, now: number): RecoveryAction | null {
+  if (campaign.state === "OPEN" && now > campaign.acceptBy) return "expire_unaccepted";
+  if (campaign.state === "ACCEPTED" && now > campaign.submitBy) return "expire_unsubmitted";
+  if (
+    campaign.state === "UNRESOLVED" &&
+    (campaign.judgmentAttempts >= 3 || now > campaign.lastJudgedAt + 7 * 86_400)
+  ) return "expire_unresolved";
+  return null;
+}
+
 async function executeStateWrite(
   options: WriteUiOptions,
   functionName: string,
@@ -177,6 +189,8 @@ export const campaignWrites = {
   },
   settle: (id: number, options: WriteUiOptions) => executeStateWrite(options, "settle", id, [id], "PAID"),
   refund: (id: number, options: WriteUiOptions) => executeStateWrite(options, "refund", id, [id], "REFUNDED"),
+  expireUnaccepted: (id: number, options: WriteUiOptions) => executeStateWrite(options, "expire_unaccepted", id, [id], "REFUNDABLE"),
+  expireUnsubmitted: (id: number, options: WriteUiOptions) => executeStateWrite(options, "expire_unsubmitted", id, [id], "REFUNDABLE"),
   expireUnresolved: (id: number, options: WriteUiOptions) => executeStateWrite(options, "expire_unresolved", id, [id], "REFUNDABLE")
 };
 import { CalldataAddress } from "genlayer-js/types";

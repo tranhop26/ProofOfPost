@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { normalizePrivateKey, validateManifest, validateNetwork } from "../scripts/deployment-lib.mjs";
 
 test("deployment rejects unknown networks", () => {
@@ -23,4 +24,11 @@ test("manifest rejects placeholders and incomplete deployment evidence", () => {
   assert.doesNotThrow(() => validateManifest(valid));
   assert.throws(() => validateManifest({ ...valid, contractAddress: "0x0000000000000000000000000000000000000000" }), /address/i);
   assert.throws(() => validateManifest({ ...valid, deploymentTransaction: "NOT_DEPLOYED" }), /transaction/i);
+});
+
+test("live evidence requires a passed verdict, terminal payout, and a real rejected transaction hash", () => {
+  const source = readFileSync(new URL("../scripts/e2e.mjs", import.meta.url), "utf8");
+  assert.match(source, /resolved\?\.state !== ['"]PASSED['"]/);
+  assert.match(source, /['"]settle['"].*['"]PAID['"]/s);
+  assert.match(source, /transactionHash: unauthorizedHash/);
 });

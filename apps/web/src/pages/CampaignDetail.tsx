@@ -3,7 +3,7 @@ import { CampaignStatePanel } from "../components/CampaignStatePanel";
 import { CONTRACT_CONFIGURED } from "../lib/genlayer";
 import { useCampaign } from "../hooks/useCampaigns";
 import { useWallet } from "../lib/wallet";
-import { campaignWrites, type TransactionStage } from "../lib/contract";
+import { campaignWrites, recoveryAction, type TransactionStage } from "../lib/contract";
 import { TransactionStatus } from "../components/TransactionStatus";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,6 +18,8 @@ function LiveCampaign({ id }: { id: number }) {
   const campaign = query.data; if (!campaign) return <div className="configuration-card"><h2>Campaign not found</h2></div>;
   const options = wallet.address ? { account: wallet.address, onStage: setStage } : null;
   const same = (left: string, right: string | null) => Boolean(right && left.toLowerCase() === right.toLowerCase());
+  const recovery = recoveryAction(campaign, Math.floor(Date.now() / 1000));
+  const recover = recovery === "expire_unaccepted" ? campaignWrites.expireUnaccepted : recovery === "expire_unsubmitted" ? campaignWrites.expireUnsubmitted : campaignWrites.expireUnresolved;
   return <>
     <span className="eyebrow">Campaign #{campaign.id.toString()} · {campaign.amount.toString()} wei simulated GEN</span><h1>{campaign.title}</h1>
     <CampaignStatePanel state={campaign.state} verdictReason={campaign.verdictReason} />
@@ -29,6 +31,7 @@ function LiveCampaign({ id }: { id: number }) {
       {["SUBMITTED", "UNRESOLVED"].includes(campaign.state) && options && <button className="button primary" onClick={() => void act(() => campaignWrites.resolve(id, options))}>Run validator consensus</button>}
       {campaign.state === "PASSED" && options && <button className="button primary" onClick={() => void act(() => campaignWrites.settle(id, options))}>Settle to creator</button>}
       {["FAILED", "REFUNDABLE"].includes(campaign.state) && options && <button className="button primary" onClick={() => void act(() => campaignWrites.refund(id, options))}>Refund sponsor</button>}
+      {recovery && options && <button className="button secondary" onClick={() => void act(() => recover(id, options))}>Make sponsor refund available</button>}
       {!wallet.address && <p className="muted">Connect a wallet to see eligible on-chain actions.</p>}
     </div>
     <TransactionStatus stage={stage} hash={hash} error={error} />

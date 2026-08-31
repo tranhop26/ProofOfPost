@@ -35,20 +35,23 @@ async function write(client, actor, method, args, expected, value = 0n) {
 
 const campaignId = await write(sponsorClient, sponsor.address, 'create_campaign', [toAddress(creator.address), 'ProofOfPost live verification', 'Publish a public page naming ProofOfPost and the campaign purpose.', 'The page must match the creator handle, name ProofOfPost, describe sponsored verification, and be published before the deadline.', allowedOrigin, '@proof-creator', now + 3600, now + 7200], 'OPEN', 10n ** 15n);
 
-let unauthorizedError = '';
-try {
-  await write(sponsorClient, sponsor.address, 'accept_campaign', [campaignId], 'ACCEPTED');
-} catch (error) {
-  unauthorizedError = error instanceof Error ? error.message : String(error);
-}
-if (!unauthorizedError) throw new Error('Critical unauthorized acceptance branch unexpectedly succeeded.');
-proof.push({ actor: sponsor.address, action: 'unauthorized accept', contractMethod: 'accept_campaign', transactionHash: null, finalized: false, execution: 'REJECTED', readback: 'OPEN' });
+const unauthorizedHash = await sponsorClient.writeContract({ address: manifest.contractAddress, functionName: 'accept_campaign', args: [campaignId] });
+const unauthorizedReceipt = await sponsorClient.waitForTransactionReceipt({ hash: unauthorizedHash, status: 'FINALIZED', retries: 150, interval: 3000 });
+const unauthorizedExecution = String(unauthorizedReceipt?.data?.execution_result ?? unauthorizedReceipt?.execution_result ?? '').toUpperCase();
+if (unauthorizedExecution === 'SUCCESS') throw new Error('Critical unauthorized acceptance branch unexpectedly succeeded.');
+const unauthorizedReadback = await sponsorClient.readContract({ address: manifest.contractAddress, functionName: 'get_campaign', args: [campaignId] });
+if (unauthorizedReadback?.state !== 'OPEN') throw new Error(`Unauthorized acceptance changed state to ${unauthorizedReadback?.state}.`);
+proof.push({ actor: sponsor.address, action: 'unauthorized accept', contractMethod: 'accept_campaign', transactionHash: unauthorizedHash, finalized: true, execution: unauthorizedExecution || 'ERROR', readback: unauthorizedReadback.state });
 
 await write(creatorClient, creator.address, 'accept_campaign', [campaignId], 'ACCEPTED');
 await write(creatorClient, creator.address, 'submit_evidence', [campaignId, evidenceUrl, now], 'SUBMITTED');
 const resolver = createClient({ chain, account: sponsor });
 const resolutionHash = await resolver.writeContract({ address: manifest.contractAddress, functionName: 'resolve_campaign', args: [campaignId] });
 const resolutionReceipt = await resolver.waitForTransactionReceipt({ hash: resolutionHash, status: 'FINALIZED', retries: 150, interval: 3000 });
+const resolutionExecution = String(resolutionReceipt?.data?.execution_result ?? resolutionReceipt?.execution_result ?? '').toUpperCase();
+if (resolutionExecution !== 'SUCCESS') throw new Error('resolve_campaign finalized without SUCCESS.');
 const resolved = await sponsorClient.readContract({ address: manifest.contractAddress, functionName: 'get_campaign', args: [campaignId] });
-proof.push({ actor: sponsor.address, action: 'resolve evidence', contractMethod: 'resolve_campaign', transactionHash: resolutionHash, finalized: true, execution: String(resolutionReceipt?.data?.execution_result ?? ''), readback: resolved?.state });
+if (resolved?.state !== 'PASSED') throw new Error(`Live happy path requires PASSED readback; received ${resolved?.state}.`);
+proof.push({ actor: sponsor.address, action: 'resolve evidence', contractMethod: 'resolve_campaign', transactionHash: resolutionHash, finalized: true, execution: resolutionExecution, readback: resolved.state });
+await write(sponsorClient, sponsor.address, 'settle', [campaignId], 'PAID');
 console.log(JSON.stringify({ contractAddress: manifest.contractAddress, campaignId, proof }, null, 2));
