@@ -4,10 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @proofofpost/shared build",
+    "build": "pnpm --filter @proofofpost/shared build && pnpm --filter @proofofpost/web build",
+    "typecheck": "pnpm --filter @proofofpost/shared build && pnpm --filter @proofofpost/web typecheck",
     "test": "pnpm -r --sequential test",
     "test:contract": "pnpm --filter @proofofpost/contracts test",
     "test:shared": "pnpm --filter @proofofpost/shared test",
+    "test:web": "pnpm --filter @proofofpost/web test",
+    "test:integration": "pnpm --filter @proofofpost/web test -- src/integration/campaign-flow.test.ts",
     "lint:genvm": "set PYTHONUTF8=1&& genvm-lint check packages/contracts/proof_of_post.py"
   },
   "packageManager": "pnpm@10.18.2"

@@ -8,5 +8,6 @@ coverage/
 __pycache__/
 .pytest_cache/
 .vite/
+*.tsbuildinfo
 deployments/*.local.json
 
