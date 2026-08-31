@@ -46,3 +46,8 @@ test("source verification ignores only editor newline normalization", () => {
   assert.equal(canonicalContractSource(studio), canonicalContractSource(repository));
   assert.notEqual(canonicalContractSource("line one\nchanged\n"), canonicalContractSource(repository));
 });
+
+test("Vercel output directory is relative to the configured apps/web project root", () => {
+  const config = JSON.parse(readFileSync(new URL("../../../vercel.json", import.meta.url), "utf8"));
+  assert.equal(config.outputDirectory, "dist");
+});
