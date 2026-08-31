@@ -49,6 +49,15 @@ Direct tests cover authorization, invalid transitions, replay, malformed/stale e
 
 ## Deployment
 
+Verified Studionet deployment:
+
+- Contract: [`0x8197823FC3D2fd6654ED6E70ab34C849Ca498477`](https://explorer-studio.genlayer.com/address/0x8197823FC3D2fd6654ED6E70ab34C849Ca498477)
+- Deployment transaction: [`0xb4c17fbf48a60615c73c7caef4378c068f973d7362c04601e98c90edad85f6de`](https://explorer-studio.genlayer.com/tx/0xb4c17fbf48a60615c73c7caef4378c068f973d7362c04601e98c90edad85f6de)
+- Source hash: `sha256:63d96edcde2182ea623d0236e00f8922b73c1b10fc51e66e465930090b829813`
+- Manifest: `deployments/studionet-0x8197823fc3d2fd6654ed6e70ab34c849ca498477.json`
+
+The deployment reached `FINALIZED`. Automated readback verified the canonical source hash, all 14 schema methods, and initial accounting of zero inflows, active escrow, payouts, and refunds.
+
 Deployment is intentionally guarded. First inspect the exact wallet/network/source hash without deploying:
 
 ```bash
@@ -61,8 +70,6 @@ After the required action-time user confirmation, set the exact one-use confirma
 ```bash
 node packages/contracts/scripts/readback.mjs deployments/<manifest>.json
 ```
-
-No real address or transaction is documented until deployment and readback actually happen.
 
 ## Use
 
@@ -82,4 +89,4 @@ The UI distinguishes disconnected, signing, pending, `FINALIZED`, execution `SUC
 - Studionet does not represent production custody or real monetary value.
 - A frozen deployment cannot repair lost wallets or migrate open campaigns administratively.
 
-See the current [proof matrix](docs/proof-matrix.md). Live evidence remains explicitly incomplete until authorized deployment.
+See the current [proof matrix](docs/proof-matrix.md). Deployment is verified; end-to-end campaign transactions remain explicitly incomplete until the live actor wallets and public evidence are exercised.

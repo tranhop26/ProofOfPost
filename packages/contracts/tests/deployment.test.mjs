@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { normalizePrivateKey, validateManifest, validateNetwork } from "../scripts/deployment-lib.mjs";
+import { canonicalContractSource, normalizePrivateKey, validateManifest, validateNetwork } from "../scripts/deployment-lib.mjs";
 
 test("deployment rejects unknown networks", () => {
   assert.throws(() => validateNetwork("mainnet"), /network/i);
@@ -31,4 +31,18 @@ test("live evidence requires a passed verdict, terminal payout, and a real rejec
   assert.match(source, /resolved\?\.state !== ['"]PASSED['"]/);
   assert.match(source, /['"]settle['"].*['"]PAID['"]/s);
   assert.match(source, /transactionHash: unauthorizedHash/);
+});
+
+test("readback passes contract addresses directly to the GenLayer SDK", () => {
+  const source = readFileSync(new URL("../scripts/readback.mjs", import.meta.url), "utf8");
+  assert.match(source, /getContractCode\(manifest\.contractAddress\)/);
+  assert.match(source, /getContractSchema\(manifest\.contractAddress\)/);
+  assert.doesNotMatch(source, /getContract(?:Code|Schema)\(\{\s*address:/);
+});
+
+test("source verification ignores only editor newline normalization", () => {
+  const repository = "line one\nline two\n";
+  const studio = "line one\r\nline two\r\n\r\n";
+  assert.equal(canonicalContractSource(studio), canonicalContractSource(repository));
+  assert.notEqual(canonicalContractSource("line one\nchanged\n"), canonicalContractSource(repository));
 });

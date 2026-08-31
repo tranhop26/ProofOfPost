@@ -10,6 +10,10 @@ export function normalizePrivateKey(value) {
   return `0x${clean}`;
 }
 
+export function canonicalContractSource(value) {
+  return String(value).replace(/\r\n?/g, '\n').replace(/\n+$/g, '') + '\n';
+}
+
 function realAddress(value) {
   return /^0x[0-9a-fA-F]{40}$/.test(String(value)) && !/^0x0{40}$/i.test(String(value));
 }

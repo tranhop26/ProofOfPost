@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "project": "ProofOfPost",
+  "network": "studionet",
+  "chainId": 61999,
+  "classification": "INTENTIONALLY_FROZEN",
+  "contractAddress": "0x8197823FC3D2fd6654ED6E70ab34C849Ca498477",
+  "deploymentTransaction": "0xb4c17fbf48a60615c73c7caef4378c068f973d7362c04601e98c90edad85f6de",
+  "deployer": "0x21b45103dd05c43969daF3CbB4277391777e2eC7",
+  "sourceHash": "sha256:63d96edcde2182ea623d0236e00f8922b73c1b10fc51e66e465930090b829813",
+  "deployedAt": "2026-08-31T15:16:20.2702685Z",
+  "constructorArgs": []
+}
