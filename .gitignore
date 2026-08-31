@@ -1,0 +1,12 @@
+.worktrees/
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+.vite/
+deployments/*.local.json
+
