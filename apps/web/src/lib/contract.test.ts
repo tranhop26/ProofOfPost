@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseGenToWei, recoveryAction, writeAndConfirm, type ContractClient } from "./contract";
+import { parseGenToWei, recoveryAction, validateCreateCampaignInput, writeAndConfirm, type ContractClient } from "./contract";
 import type { Campaign } from "@proofofpost/shared";
 
 function client(receipt: unknown): ContractClient {
@@ -95,6 +95,30 @@ describe("parseGenToWei", () => {
   });
   it("rejects zero, negative, exponential, and over-precision values", () => {
     for (const value of ["0", "-1", "1e3", "1.0000000000000000001"]) expect(() => parseGenToWei(value)).toThrow();
+  });
+});
+
+describe("validateCreateCampaignInput", () => {
+  const valid = {
+    creator: "0x2222222222222222222222222222222222222222",
+    title: "Campaign title",
+    brief: "A complete sponsored publication brief.",
+    rubric: "PASS only when every required fact is present.",
+    allowedOrigin: "https://creator.example",
+    creatorHandle: "@creator",
+    acceptBy: 1_100,
+    submitBy: 1_200,
+    amountWei: 1n
+  };
+
+  it("blocks known-invalid payable campaigns before wallet submission", () => {
+    expect(() => validateCreateCampaignInput(
+      { ...valid, creator: "0x1111111111111111111111111111111111111111" },
+      "0x1111111111111111111111111111111111111111",
+      1_000
+    )).toThrow(/different/i);
+    expect(() => validateCreateCampaignInput({ ...valid, submitBy: 1_050 }, "0x1111111111111111111111111111111111111111", 1_000)).toThrow(/deadline/i);
+    expect(() => validateCreateCampaignInput({ ...valid, allowedOrigin: "https://creator.example/post" }, "0x1111111111111111111111111111111111111111", 1_000)).toThrow(/origin/i);
   });
 });
 

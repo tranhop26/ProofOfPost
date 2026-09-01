@@ -224,14 +224,50 @@ class ProofOfPost(gl.Contract):
         amount = int(gl.message.value)
         now = _now()
         _require(amount > 0, "positive escrow is required")
-        _require(creator != sponsor, "sponsor and creator must be different")
-        _require(now < int(accept_by) < int(submit_by), "deadlines must be ordered in the future")
-        clean_title = _bounded(title, "title", MAX_TITLE_CHARS)
-        clean_brief = _bounded(brief, "brief", MAX_BRIEF_CHARS)
-        clean_rubric = _bounded(rubric, "rubric", MAX_RUBRIC_CHARS)
-        clean_origin = _bounded(allowed_origin, "allowed origin", 300).rstrip("/")
-        _require(_origin_of(clean_origin) == clean_origin, "allowed origin must be an HTTPS origin without a path")
-        clean_handle = _bounded(creator_handle, "creator handle", MAX_HANDLE_CHARS)
+        try:
+            _require(creator != sponsor, "sponsor and creator must be different")
+            _require(now < int(accept_by) < int(submit_by), "deadlines must be ordered in the future")
+            clean_title = _bounded(title, "title", MAX_TITLE_CHARS)
+            clean_brief = _bounded(brief, "brief", MAX_BRIEF_CHARS)
+            clean_rubric = _bounded(rubric, "rubric", MAX_RUBRIC_CHARS)
+            clean_origin = _bounded(allowed_origin, "allowed origin", 300).rstrip("/")
+            _require(_origin_of(clean_origin) == clean_origin, "allowed origin must be an HTTPS origin without a path")
+            clean_handle = _bounded(creator_handle, "creator handle", MAX_HANDLE_CHARS)
+        except gl.vm.UserError as error:
+            campaign_id = self.next_campaign_id
+            self.next_campaign_id = u256(int(campaign_id) + 1)
+            rejected = Campaign(
+                campaign_id,
+                sponsor,
+                creator,
+                u256(amount),
+                "Rejected campaign",
+                "Creation rejected before escrow activation.",
+                "No validator judgment required.",
+                "https://invalid.example",
+                "rejected",
+                REFUNDED,
+                FAIL,
+                u256(now),
+                u256(0),
+                u256(accept_by),
+                u256(submit_by),
+                u256(0),
+                u256(0),
+                "",
+                "",
+                u256(0),
+                u256(0),
+                str(error)[:500],
+                True,
+            )
+            self.campaigns[campaign_id] = rejected
+            self.sponsor_campaigns.get_or_insert_default(sponsor).append(campaign_id)
+            self.creator_campaigns.get_or_insert_default(creator).append(campaign_id)
+            self.total_inflows = u256(int(self.total_inflows) + amount)
+            self.completed_refunds = u256(int(self.completed_refunds) + amount)
+            _NativeRecipient(sponsor).emit_transfer(value=u256(amount))
+            return campaign_id
 
         campaign_id = self.next_campaign_id
         self.next_campaign_id = u256(int(campaign_id) + 1)

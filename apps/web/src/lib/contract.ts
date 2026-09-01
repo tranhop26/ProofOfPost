@@ -152,6 +152,29 @@ export interface CreateCampaignInput {
 
 export interface WriteUiOptions extends ConfirmOptions { account: `0x${string}` }
 
+export function validateCreateCampaignInput(input: CreateCampaignInput, sponsor: string, now: number): void {
+  if (input.creator.toLowerCase() === sponsor.toLowerCase()) throw new Error("Sponsor and creator must be different wallets.");
+  if (!(now < input.acceptBy && input.acceptBy < input.submitBy)) throw new Error("Campaign deadlines must be ordered in the future.");
+  if (input.amountWei <= 0n) throw new Error("Escrow amount must be greater than zero.");
+  const bounded = (value: string, name: string, maximum: number) => {
+    const cleaned = value.trim();
+    if (!cleaned || cleaned.length > maximum) throw new Error(`${name} length is invalid.`);
+    if ([...cleaned].some((character) => character.charCodeAt(0) < 32 && character !== "\n" && character !== "\t")) {
+      throw new Error(`${name} contains invalid control characters.`);
+    }
+  };
+  bounded(input.title, "Title", 120);
+  bounded(input.brief, "Brief", 3_000);
+  bounded(input.rubric, "Rubric", 2_000);
+  bounded(input.creatorHandle, "Creator handle", 100);
+  const cleanedOrigin = input.allowedOrigin.trim().replace(/\/$/, "");
+  let parsed: URL;
+  try { parsed = new URL(cleanedOrigin); } catch { throw new Error("Allowed origin must be a valid HTTPS origin."); }
+  if (parsed.protocol !== "https:" || parsed.origin !== cleanedOrigin || parsed.username || parsed.password || parsed.port) {
+    throw new Error("Allowed origin must be an HTTPS origin without a path.");
+  }
+}
+
 export type RecoveryAction = "expire_unaccepted" | "expire_unsubmitted" | "expire_unresolved";
 
 export function recoveryAction(campaign: Campaign, now: number): RecoveryAction | null {
@@ -188,6 +211,7 @@ async function executeStateWrite(
 }
 
 export async function createCampaign(input: CreateCampaignInput, options: WriteUiOptions) {
+  validateCreateCampaignInput(input, options.account, Math.floor(Date.now() / 1_000));
   const before = Number(await read("get_campaign_count"));
   const expectedId = before + 1;
   return executeStateWrite(options, "create_campaign", expectedId, [

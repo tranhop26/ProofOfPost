@@ -50,7 +50,6 @@ class Chain:
         try:
             result = getattr(self.contract, method)(*args)
         except glstub.UserError as error:
-            self.rt.contract_balance -= value
             raise Revert(str(error)) from None
         self.assert_conservation()
         return result
