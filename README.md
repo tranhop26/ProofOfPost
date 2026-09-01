@@ -56,7 +56,12 @@ Active verified Studionet successor:
 - Source hash: `sha256:9dafc26a869b8dc1e3511e5425086d7c5cf4ac43575eb98a32594b62dbe54368`
 - Manifest: `deployments/studionet-0x26775c839ea1d22bbb30959ab3ae8544023ef09b.json`
 
-The deployment reached `FINALIZED / SUCCESS / MAJORITY_AGREE`. Automated readback verified the exact source hash, all 14 schema methods, and zero initial balance. A live 1 simulated GEN self-deal regression was recorded as terminal `REFUNDED`; the child transfer returned the full value, contract balance remained zero, and accounting read back as `total_inflows = completed_refunds = 1 GEN` with no active escrow.
+The deployment reached `FINALIZED / SUCCESS / MAJORITY_AGREE`. Automated readback verified the exact source hash, all 14 schema methods, and zero initial balance. Two live 1 simulated GEN campaigns now cover both custody outcomes on this active address:
+
+- Campaign `1` is a prohibited self-deal regression that ended `REFUNDED`; the child transfer returned the full value to the sponsor.
+- Campaign `2` is the independent-actor happy path using [public evidence](https://proof-of-post.vercel.app/proofs/campaign-2.html). The first resolution safely finalized as `MAJORITY_DISAGREE` without changing state or accounting. A retry reached `MAJORITY_AGREE`, read back `PASSED / PASS`, and settlement paid exactly 1 GEN to the fixed creator.
+
+Final readback is `total_inflows = 2 GEN`, `completed_payouts = 1 GEN`, `completed_refunds = 1 GEN`, `active_escrow = 0`, and physical contract balance `0`.
 
 Deployment is intentionally guarded. First inspect the exact wallet/network/source hash without deploying:
 
@@ -89,4 +94,4 @@ The UI distinguishes disconnected, signing, pending, `FINALIZED`, execution `SUC
 - Studionet does not represent production custody or real monetary value.
 - A frozen deployment cannot repair lost wallets or migrate open campaigns administratively.
 
-See the current [proof matrix](docs/proof-matrix.md) for the active successor regression and the preserved live happy-path evidence from the superseded deployment.
+See the current [proof matrix](docs/proof-matrix.md) for the active successor's complete live refund and payout evidence.
