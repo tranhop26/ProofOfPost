@@ -49,14 +49,14 @@ Direct tests cover authorization, invalid transitions, replay, malformed/stale e
 
 ## Deployment
 
-Verified Studionet deployment:
+Active verified Studionet successor:
 
-- Contract: [`0x8197823FC3D2fd6654ED6E70ab34C849Ca498477`](https://explorer-studio.genlayer.com/address/0x8197823FC3D2fd6654ED6E70ab34C849Ca498477)
-- Deployment transaction: [`0xb4c17fbf48a60615c73c7caef4378c068f973d7362c04601e98c90edad85f6de`](https://explorer-studio.genlayer.com/tx/0xb4c17fbf48a60615c73c7caef4378c068f973d7362c04601e98c90edad85f6de)
-- Source hash: `sha256:63d96edcde2182ea623d0236e00f8922b73c1b10fc51e66e465930090b829813`
-- Manifest: `deployments/studionet-0x8197823fc3d2fd6654ed6e70ab34c849ca498477.json`
+- Contract: [`0x26775c839ea1D22bbB30959aB3Ae8544023eF09B`](https://explorer-studio.genlayer.com/address/0x26775c839ea1D22bbB30959aB3Ae8544023eF09B)
+- Deployment transaction: [`0x3278511ea807793252203ffd0ecdf4d5e3bc429928b24b1029a0256edbcd983d`](https://explorer-studio.genlayer.com/tx/0x3278511ea807793252203ffd0ecdf4d5e3bc429928b24b1029a0256edbcd983d)
+- Source hash: `sha256:9dafc26a869b8dc1e3511e5425086d7c5cf4ac43575eb98a32594b62dbe54368`
+- Manifest: `deployments/studionet-0x26775c839ea1d22bbb30959ab3ae8544023ef09b.json`
 
-The deployment reached `FINALIZED`. Automated readback verified the canonical source hash, all 14 schema methods, and initial accounting of zero inflows, active escrow, payouts, and refunds.
+The deployment reached `FINALIZED / SUCCESS / MAJORITY_AGREE`. Automated readback verified the exact source hash, all 14 schema methods, and zero initial balance. A live 1 simulated GEN self-deal regression was recorded as terminal `REFUNDED`; the child transfer returned the full value, contract balance remained zero, and accounting read back as `total_inflows = completed_refunds = 1 GEN` with no active escrow.
 
 Deployment is intentionally guarded. First inspect the exact wallet/network/source hash without deploying:
 
@@ -89,4 +89,4 @@ The UI distinguishes disconnected, signing, pending, `FINALIZED`, execution `SUC
 - Studionet does not represent production custody or real monetary value.
 - A frozen deployment cannot repair lost wallets or migrate open campaigns administratively.
 
-See the current [proof matrix](docs/proof-matrix.md). Deployment is verified; end-to-end campaign transactions remain explicitly incomplete until the live actor wallets and public evidence are exercised.
+See the current [proof matrix](docs/proof-matrix.md) for the active successor regression and the preserved live happy-path evidence from the superseded deployment.
