@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Creator evidence for ProofOfPost Studionet campaign 2." />
+    <title>ProofOfPost — Campaign 2 Evidence</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f5f7fb; background: #090b10; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; background: radial-gradient(circle at 15% 0%, #202938 0, transparent 35rem), #090b10; }
+      a { color: #c9f36a; }
+      main { width: min(960px, calc(100% - 32px)); margin: 0 auto; padding: 64px 0 80px; }
+      header { margin-bottom: 32px; }
+      .eyebrow { margin: 0 0 14px; color: #c9f36a; font-size: .78rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+      h1 { max-width: 760px; margin: 0; font-size: clamp(2.3rem, 7vw, 5rem); line-height: .98; letter-spacing: -.055em; }
+      .lede { max-width: 720px; margin: 24px 0 0; color: #b9c0cc; font-size: clamp(1.05rem, 2.2vw, 1.3rem); line-height: 1.65; }
+      .disclosure { margin: 32px 0; padding: 22px 24px; border: 1px solid #c9f36a; border-radius: 16px; background: rgba(201,243,106,.07); }
+      .disclosure strong { display: block; margin-bottom: 7px; color: #c9f36a; text-transform: uppercase; letter-spacing: .08em; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      article { padding: 24px; border: 1px solid #2b313c; border-radius: 18px; background: rgba(17,20,27,.86); }
+      article.wide { grid-column: 1 / -1; }
+      h2 { margin: 0 0 12px; font-size: 1.05rem; }
+      p { margin: 0; color: #c5cad3; line-height: 1.65; }
+      dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px 18px; margin: 0; }
+      dt { color: #858d9b; }
+      dd { margin: 0; overflow-wrap: anywhere; }
+      .steps { counter-reset: proof-step; display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+      .steps li { counter-increment: proof-step; display: grid; grid-template-columns: 36px 1fr; gap: 12px; color: #c5cad3; line-height: 1.55; }
+      .steps li::before { content: counter(proof-step); display: grid; width: 30px; height: 30px; place-items: center; border-radius: 999px; background: #c9f36a; color: #10130c; font-weight: 800; }
+      footer { margin-top: 30px; color: #7d8592; font-size: .9rem; }
+      @media (max-width: 680px) { main { padding-top: 40px; } .grid { grid-template-columns: 1fr; } article.wide { grid-column: auto; } dl { grid-template-columns: 1fr; gap: 4px; } dd { margin-bottom: 10px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Public creator evidence · Studionet</p>
+        <h1>ProofOfPost campaign #2</h1>
+        <p class="lede">ProofOfPost is a sponsored-content escrow workflow. Its frozen Intelligent Contract—not a private backend—holds campaign value, enforces deadlines, records evidence, asks GenLayer validators for the decision, and fixes the payout or refund recipient.</p>
+      </header>
+
+      <section class="disclosure" aria-label="Sponsored content disclosure">
+        <strong>Sponsored verification disclosure</strong>
+        This page is the creator deliverable for funded campaign 2. The sponsor escrowed 1 simulated Studionet GEN for publication and independent validator review. Studionet GEN is test value, not real money.
+      </section>
+
+      <section class="grid">
+        <article>
+          <h2>Parties and identity</h2>
+          <dl>
+            <dt>Creator identity</dt><dd>ProofOfPost</dd>
+            <dt>Creator wallet</dt><dd>0x94dBCa71a30942e43B6558aA624d0D24b9C2ef46</dd>
+            <dt>Sponsor wallet</dt><dd>0x21b45103dd05c43969daF3CbB4277391777e2eC7</dd>
+          </dl>
+        </article>
+
+        <article>
+          <h2>Frozen campaign binding</h2>
+          <dl>
+            <dt>Campaign</dt><dd>2</dd>
+            <dt>Contract</dt><dd>0x26775c839ea1D22bbB30959aB3Ae8544023eF09B</dd>
+            <dt>Evidence version</dt><dd>successor-happy-path-v1</dd>
+          </dl>
+        </article>
+
+        <article class="wide">
+          <h2>Required workflow description</h2>
+          <ol class="steps">
+            <li><span>The sponsor creates immutable terms and deposits 1 simulated Studionet GEN into contract custody before work begins.</span></li>
+            <li><span>The named creator accepts, publishes this public page, and submits its exact HTTPS URL from the frozen allowed origin.</span></li>
+            <li><span>GenLayer validators compare creator identity, publication timing, required workflow content, and sponsorship disclosure to the on-chain brief and rubric.</span></li>
+            <li><span>PASS permits payment only to the fixed creator. FAIL permits refund only to the sponsor. Insufficient evidence or consensus becomes UNRESOLVED for bounded retry or recovery.</span></li>
+          </ol>
+        </article>
+
+        <article class="wide">
+          <h2>Verifiable references</h2>
+          <p>Campaign state is read from the active contract at <a href="https://proof-of-post.vercel.app/campaigns/2">ProofOfPost campaign 2</a>. The intentionally frozen successor is independently inspectable on the <a href="https://explorer-studio.genlayer.com/address/0x26775c839ea1D22bbB30959aB3Ae8544023eF09B">GenLayer Studio Explorer</a>.</p>
+        </article>
+      </section>
+
+      <footer>This static page is served from the campaign's frozen origin, https://proof-of-post.vercel.app. It contains no client-side mock state and cannot select a verdict or move escrowed value.</footer>
+    </main>
+  </body>
+</html>
