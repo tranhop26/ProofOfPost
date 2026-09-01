@@ -10,7 +10,7 @@ const LABELS: Record<TransactionStage, string> = {
 };
 
 export function TransactionStatus({ stage, hash, error }: { stage: TransactionStage | null; hash?: string; error?: string }) {
-  if (error) return <div className="transaction-status error" role="alert"><b>Transaction error</b><span>{error}</span></div>;
+  if (error) return <div className="transaction-status error" role="alert"><b>Transaction error</b><span>{error}</span>{hash && <a href={explorerTxUrl(hash)} target="_blank" rel="noreferrer">View transaction ↗</a>}</div>;
   if (!stage) return null;
   return <div className="transaction-status" role="status" aria-live="polite"><span className="spinner" /><b>{LABELS[stage]}</b>{hash && <a href={explorerTxUrl(hash)} target="_blank" rel="noreferrer">View transaction ↗</a>}</div>;
 }

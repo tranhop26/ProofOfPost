@@ -16,7 +16,7 @@ function LiveCampaign({ id }: { id: number }) {
   if (query.isPending) return <div className="loading-card" role="status"><span className="spinner" />Loading campaign readback…</div>;
   if (query.error) return <div className="configuration-card error" role="alert"><h2>Readback error</h2><p>{query.error.message}</p></div>;
   const campaign = query.data; if (!campaign) return <div className="configuration-card"><h2>Campaign not found</h2></div>;
-  const options = wallet.address ? { account: wallet.address, onStage: setStage } : null;
+  const options = wallet.address ? { account: wallet.address, onStage: setStage, onHash: setHash } : null;
   const same = (left: string, right: string | null) => Boolean(right && left.toLowerCase() === right.toLowerCase());
   const recovery = recoveryAction(campaign, Math.floor(Date.now() / 1000));
   const recover = recovery === "expire_unaccepted" ? campaignWrites.expireUnaccepted : recovery === "expire_unsubmitted" ? campaignWrites.expireUnsubmitted : campaignWrites.expireUnresolved;

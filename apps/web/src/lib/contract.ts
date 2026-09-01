@@ -14,6 +14,7 @@ export interface ConfirmOptions {
   readbackRetries?: number;
   readbackIntervalMs?: number;
   onStage?: (stage: TransactionStage) => void;
+  onHash?: (hash: string) => void;
 }
 
 export type TransactionStage = "SIGNING" | "PENDING" | "FINALIZED" | "SUCCESS" | "READBACK";
@@ -23,6 +24,16 @@ export interface ConfirmedWrite<T> {
   finalized: true;
   execution: "SUCCESS";
   readback: T;
+}
+
+export class ContractTransactionError extends Error {
+  readonly hash: string;
+
+  constructor(message: string, hash: string) {
+    super(message);
+    this.name = "ContractTransactionError";
+    this.hash = hash;
+  }
 }
 
 function receiptRecord(receipt: unknown): Record<string, unknown> {
@@ -36,12 +47,19 @@ function nested(record: Record<string, unknown>, key: string): Record<string, un
 }
 
 function executionResult(receipt: Record<string, unknown>): string {
-  const value = nested(receipt, "data").execution_result ?? nested(receipt, "txDataDecoded").execution_result ?? receipt.execution_result;
+  const leaderReceipts = nested(receipt, "consensus_data").leader_receipt;
+  const leaderExecution = Array.isArray(leaderReceipts)
+    ? leaderReceipts.find((value) => value && typeof value === "object" && "execution_result" in value)
+    : undefined;
+  const value = nested(receipt, "data").execution_result
+    ?? nested(receipt, "txDataDecoded").execution_result
+    ?? receipt.execution_result
+    ?? (leaderExecution as Record<string, unknown> | undefined)?.execution_result;
   return String(value ?? "").toUpperCase();
 }
 
 function finalized(receipt: Record<string, unknown>): boolean {
-  const status = String(receipt.statusName ?? receipt.status ?? "").toUpperCase();
+  const status = String(receipt.statusName ?? receipt.status_name ?? receipt.status ?? "").toUpperCase();
   return status === "FINALIZED";
 }
 
@@ -56,11 +74,12 @@ export async function writeAndConfirm<T>(
 ): Promise<ConfirmedWrite<T>> {
   options.onStage?.("SIGNING");
   const hash = await client.writeContract(request as unknown as Record<string, unknown>);
+  options.onHash?.(hash);
   options.onStage?.("PENDING");
   const receipt = receiptRecord(await client.waitForTransactionReceipt({ hash, status: "FINALIZED", retries: 100, interval: 3000 }));
-  if (!finalized(receipt)) throw new Error("Transaction did not reach FINALIZED state.");
+  if (!finalized(receipt)) throw new ContractTransactionError("Transaction did not reach FINALIZED state.", hash);
   options.onStage?.("FINALIZED");
-  if (executionResult(receipt) !== "SUCCESS") throw new Error("Transaction finalized but contract execution failed.");
+  if (executionResult(receipt) !== "SUCCESS") throw new ContractTransactionError("Transaction finalized but contract execution failed.", hash);
   options.onStage?.("SUCCESS");
 
   const retries = options.readbackRetries ?? 8;
@@ -74,7 +93,7 @@ export async function writeAndConfirm<T>(
     }
     if (attempt + 1 < retries && interval > 0) await delay(interval);
   }
-  throw new Error("Transaction succeeded but authoritative contract readback is stale.");
+  throw new ContractTransactionError("Transaction succeeded but authoritative contract readback is stale.", hash);
 }
 
 export function validCampaignId(value: unknown): value is number {

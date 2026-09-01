@@ -24,7 +24,7 @@ export function CreateCampaign() {
         creator: String(data.get("creator")), title: String(data.get("title")), brief: String(data.get("brief")), rubric: String(data.get("rubric")),
         allowedOrigin: String(data.get("origin")), creatorHandle: String(data.get("handle")), acceptBy, submitBy,
         amountWei: parseGenToWei(String(data.get("amount")))
-      }, { account: wallet.address, onStage: setStage });
+      }, { account: wallet.address, onStage: setStage, onHash: setHash });
       setHash(result.hash);
       navigate(`/campaigns/${result.readback.id.toString()}`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Campaign transaction failed."); }

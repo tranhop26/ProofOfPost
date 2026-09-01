@@ -10,6 +10,25 @@ function client(receipt: unknown): ContractClient {
 }
 
 describe("writeAndConfirm", () => {
+  it("recognizes the snake-case FINALIZED and consensus execution fields returned by Studionet", async () => {
+    const result = await writeAndConfirm(
+      client({
+        hash: "0xabc",
+        status: 7,
+        status_name: "FINALIZED",
+        result: 6,
+        result_name: "MAJORITY_AGREE",
+        consensus_data: { leader_receipt: [{ execution_result: "SUCCESS" }] }
+      }),
+      { address: "0x1111111111111111111111111111111111111111", functionName: "accept_campaign", args: [1] },
+      async () => ({ state: "ACCEPTED" }),
+      (value) => value.state === "ACCEPTED",
+      { readbackIntervalMs: 0 }
+    );
+
+    expect(result).toEqual({ hash: "0xabc", finalized: true, execution: "SUCCESS", readback: { state: "ACCEPTED" } });
+  });
+
   it("returns success only after finalization, execution success, and matching readback", async () => {
     let reads = 0;
     const stages: string[] = [];
@@ -31,6 +50,32 @@ describe("writeAndConfirm", () => {
       async () => ({ state: "OPEN" }),
       () => true
     )).rejects.toThrow(/execution/i);
+  });
+
+  it("preserves the submitted hash when a finalized Studionet transaction is rejected by the contract", async () => {
+    let failure: unknown;
+    try {
+      await writeAndConfirm(
+        client({
+          hash: "0xabc",
+          status: 7,
+          status_name: "FINALIZED",
+          result: 6,
+          result_name: "MAJORITY_AGREE",
+          consensus_data: { leader_receipt: [{ execution_result: "ERROR" }] }
+        }),
+        { address: "0x1111111111111111111111111111111111111111", functionName: "create_campaign", args: [] },
+        async () => ({ state: "NONE" }),
+        () => false
+      );
+    } catch (cause) {
+      failure = cause;
+    }
+
+    expect(failure).toMatchObject({
+      hash: "0xabc",
+      message: "Transaction finalized but contract execution failed."
+    });
   });
 
   it("rejects stale readback instead of claiming workflow success", async () => {
