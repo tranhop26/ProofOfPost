@@ -55,6 +55,14 @@ def _require(condition: bool, message: str) -> None:
         raise gl.vm.UserError(message)
 
 
+def _canonical_address(value: typing.Any) -> Address:
+    if isinstance(value, Address):
+        return value
+    if isinstance(value, int) and 0 <= value < (1 << 160):
+        return Address("0x" + format(value, "040x"))
+    raise gl.vm.UserError("creator address is invalid")
+
+
 def _bounded(value: str, name: str, maximum: int) -> str:
     cleaned = value.strip()
     _require(0 < len(cleaned) <= maximum, f"{name} length is invalid")
@@ -225,6 +233,7 @@ class ProofOfPost(gl.Contract):
         now = _now()
         _require(amount > 0, "positive escrow is required")
         try:
+            creator = _canonical_address(creator)
             _require(creator != sponsor, "sponsor and creator must be different")
             _require(now < int(accept_by) < int(submit_by), "deadlines must be ordered in the future")
             clean_title = _bounded(title, "title", MAX_TITLE_CHARS)
@@ -234,12 +243,13 @@ class ProofOfPost(gl.Contract):
             _require(_origin_of(clean_origin) == clean_origin, "allowed origin must be an HTTPS origin without a path")
             clean_handle = _bounded(creator_handle, "creator handle", MAX_HANDLE_CHARS)
         except gl.vm.UserError as error:
+            rejected_creator = creator if isinstance(creator, Address) else sponsor
             campaign_id = self.next_campaign_id
             self.next_campaign_id = u256(int(campaign_id) + 1)
             rejected = Campaign(
                 campaign_id,
                 sponsor,
-                creator,
+                rejected_creator,
                 u256(amount),
                 "Rejected campaign",
                 "Creation rejected before escrow activation.",
@@ -263,7 +273,7 @@ class ProofOfPost(gl.Contract):
             )
             self.campaigns[campaign_id] = rejected
             self.sponsor_campaigns.get_or_insert_default(sponsor).append(campaign_id)
-            self.creator_campaigns.get_or_insert_default(creator).append(campaign_id)
+            self.creator_campaigns.get_or_insert_default(rejected_creator).append(campaign_id)
             self.total_inflows = u256(int(self.total_inflows) + amount)
             self.completed_refunds = u256(int(self.completed_refunds) + amount)
             _NativeRecipient(sponsor).emit_transfer(value=u256(amount))

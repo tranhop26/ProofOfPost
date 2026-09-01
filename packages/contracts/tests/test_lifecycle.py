@@ -30,7 +30,7 @@ def test_unaccepted_campaign_becomes_refundable_only_after_deadline(chain):
 @pytest.mark.parametrize(
     ("creator", "title", "origin", "accept_offset", "submit_offset", "reason"),
     [
-        (SPONSOR, "Title", "https://creator.example", 10, 20, "sponsor and creator must be different"),
+        (int(SPONSOR.as_hex, 16), "Title", "https://creator.example", 10, 20, "sponsor and creator must be different"),
         (CREATOR, "Title", "https://creator.example", 20, 10, "deadlines must be ordered in the future"),
         (CREATOR, "", "https://creator.example", 10, 20, "title length is invalid"),
         (CREATOR, "Title", "http://creator.example", 10, 20, "evidence URL must use HTTPS"),
@@ -65,3 +65,20 @@ def test_invalid_payable_creation_is_recorded_and_refunded_without_locking_value
         "completed_payouts": 0,
         "completed_refunds": 1_000,
     }
+
+
+def test_integer_calldata_address_is_canonicalized_before_storage(chain):
+    campaign_id = chain.call(
+        "create_campaign",
+        int(CREATOR.as_hex, 16),
+        "Title",
+        "Brief enough",
+        "Rubric enough",
+        "https://creator.example",
+        "@creator",
+        chain.now + 10,
+        chain.now + 20,
+        value=1_000,
+    )
+
+    assert chain.contract.get_campaign(campaign_id)["creator"] == CREATOR.as_hex
