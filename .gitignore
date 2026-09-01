@@ -5,6 +5,7 @@ coverage/
 .env
 .env.*
 !.env.example
+!apps/web/.env.integration
 __pycache__/
 .pytest_cache/
 .vite/
@@ -12,3 +13,4 @@ __pycache__/
 deployments/*.local.json
 .env.local
 .vercel/
+docs/superpowers/

@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { canonicalContractSource, normalizePrivateKey, validateManifest, validateNetwork } from "../scripts/deployment-lib.mjs";
+
+const repositoryRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 test("deployment rejects unknown networks", () => {
   assert.throws(() => validateNetwork("mainnet"), /network/i);
@@ -55,4 +59,16 @@ test("Vercel output directory is relative to the configured apps/web project roo
 test("Vercel serves SPA deep links from the configured apps/web project root", () => {
   const config = JSON.parse(readFileSync(new URL("../../../apps/web/vercel.json", import.meta.url), "utf8"));
   assert.deepEqual(config.rewrites, [{ source: "/(.*)", destination: "/index.html" }]);
+});
+
+test("public repository excludes internal planning artifacts", () => {
+  const lines = (args) => execFileSync("git", args, { cwd: repositoryRoot, encoding: "utf8" }).trim().split(/\r?\n/).filter(Boolean);
+  const tracked = lines(["ls-files", "docs/superpowers"]);
+  const deleted = new Set(lines(["ls-files", "--deleted", "docs/superpowers"]));
+  assert.deepEqual(tracked.filter((file) => !deleted.has(file)), []);
+});
+
+test("environment template documents a blank Vercel token", () => {
+  const template = readFileSync(new URL("../../../.env.example", import.meta.url), "utf8");
+  assert.match(template, /^VERCEL_TOKEN=\s*$/m);
 });

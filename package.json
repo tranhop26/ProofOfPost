@@ -11,7 +11,7 @@
     "test:contract": "pnpm --filter @proofofpost/contracts test",
     "test:shared": "pnpm --filter @proofofpost/shared test",
     "test:web": "pnpm --filter @proofofpost/web test",
-    "test:integration": "pnpm --filter @proofofpost/web exec vitest run src/integration/campaign-flow.test.ts",
+    "test:integration": "pnpm --filter @proofofpost/web test:integration",
     "deploy:contract": "pnpm --filter @proofofpost/contracts deploy",
     "readback:contract": "pnpm --filter @proofofpost/contracts readback",
     "e2e:live": "pnpm --filter @proofofpost/contracts e2e",

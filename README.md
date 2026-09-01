@@ -2,6 +2,9 @@
 
 Sponsored-content escrow settled by GenLayer validator consensus.
 
+- Repository: [github.com/tranhop26/ProofOfPost](https://github.com/tranhop26/ProofOfPost)
+- Production: [proof-of-post.vercel.app](https://proof-of-post.vercel.app)
+
 A sponsor locks simulated GEN before work begins. A named creator accepts an immutable brief, publishes at a bound public origin, and submits one evidence URL. The Intelligent Contract asks validators whether identity, timing, required content, and sponsorship disclosure all match. `PASS` reserves payout for the creator, `FAIL` reserves refund for the sponsor, and `UNRESOLVED` holds funds safely for bounded retry or timeout recovery.
 
 > Studionet GEN is simulated development value, not real money.
@@ -13,7 +16,7 @@ A sponsor locks simulated GEN before work begins. A named creator accepts an imm
 - `apps/web` — responsive React/Vite UI using accountless reads and wallet-signed writes.
 - No backend or database controls campaign state.
 
-The contract is `INTENTIONALLY_FROZEN`. There is no owner override, upgrader, arbitrary withdrawal, or caller-selected recipient. See [recovery](docs/recovery.md).
+The contract is `INTENTIONALLY_FROZEN`. There is no owner override, upgrader, arbitrary withdrawal, or caller-selected recipient. See the concise [architecture](docs/architecture.md) and [recovery model](docs/recovery.md).
 
 ## Install and run
 
@@ -32,6 +35,7 @@ Environment variables:
 | `VITE_GENLAYER_NETWORK` | `studionet` or `testnet-asimov` |
 | `VITE_PROOF_OF_POST_ADDRESS` | Real deployed contract address; empty builds show a configuration state, never mock campaigns |
 | `DEPLOYER_PRIVATE_KEY` | Deployment only; required from environment and never given a fallback |
+| `VERCEL_TOKEN` | Vercel deployment only; required from environment and never committed or printed |
 
 ## Verification
 
@@ -42,6 +46,8 @@ pnpm build
 pnpm test
 pnpm test:integration
 ```
+
+`test:integration` uses the frontend's production read adapter against the active Studionet contract. It verifies campaign `2`, custody accounting, zero physical balance, the real happy-path transactions, and the finalized consensus-failure branch. The deterministic transaction harness remains a unit test and is not presented as live integration evidence.
 
 Direct tests cover authorization, invalid transitions, replay, malformed/stale evidence, SSRF-style URLs, semantic consensus, `UNRESOLVED`, retry bounds, timeout recovery, fixed recipients, double settlement/refund, and conservation:
 
@@ -55,6 +61,8 @@ Active verified Studionet successor:
 - Deployment transaction: [`0x3278511ea807793252203ffd0ecdf4d5e3bc429928b24b1029a0256edbcd983d`](https://explorer-studio.genlayer.com/tx/0x3278511ea807793252203ffd0ecdf4d5e3bc429928b24b1029a0256edbcd983d)
 - Source hash: `sha256:9dafc26a869b8dc1e3511e5425086d7c5cf4ac43575eb98a32594b62dbe54368`
 - Manifest: `deployments/studionet-0x26775c839ea1d22bbb30959ab3ae8544023ef09b.json`
+- Vercel project: `TDH's projects/proof-of-post`
+- Verified production deployment: `dpl_9Lw3sfzpnYLeDLW2WWSz8i3b3ETW`
 
 The deployment reached `FINALIZED / SUCCESS / MAJORITY_AGREE`. Automated readback verified the exact source hash, all 14 schema methods, and zero initial balance. Two live 1 simulated GEN campaigns now cover both custody outcomes on this active address:
 
@@ -74,6 +82,14 @@ After the required action-time user confirmation, set the exact one-use confirma
 
 ```bash
 node packages/contracts/scripts/readback.mjs deployments/<manifest>.json
+```
+
+Vercel deployment must use the environment-only token after confirming the account, team, project, and exact action:
+
+```powershell
+if (-not $env:VERCEL_TOKEN) { throw "VERCEL_TOKEN is required" }
+vercel link --yes --project proof-of-post --scope tdh-s-projects --token $env:VERCEL_TOKEN
+vercel deploy --prod --yes --scope tdh-s-projects --token $env:VERCEL_TOKEN
 ```
 
 ## Use

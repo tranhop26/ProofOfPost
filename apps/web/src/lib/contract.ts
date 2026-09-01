@@ -125,6 +125,38 @@ async function read(functionName: string, args: unknown[] = []): Promise<unknown
   return readClient().readContract({ address: configuredAddress(), functionName, args: args as never[] });
 }
 
+export interface ContractAccounting {
+  totalInflows: bigint;
+  activeEscrow: bigint;
+  completedPayouts: bigint;
+  completedRefunds: bigint;
+}
+
+function accountingInteger(raw: Record<string, unknown>, key: string): bigint {
+  const value = raw[key];
+  if (typeof value === "bigint" && value >= 0n) return value;
+  if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return BigInt(value);
+  if (typeof value === "string" && /^\d+$/.test(value)) return BigInt(value);
+  throw new Error(`Contract accounting field ${key} is not a safe non-negative integer.`);
+}
+
+export function parseContractAccounting(value: unknown): ContractAccounting {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Contract returned invalid accounting data.");
+  }
+  const raw = value as Record<string, unknown>;
+  return {
+    totalInflows: accountingInteger(raw, "total_inflows"),
+    activeEscrow: accountingInteger(raw, "active_escrow"),
+    completedPayouts: accountingInteger(raw, "completed_payouts"),
+    completedRefunds: accountingInteger(raw, "completed_refunds")
+  };
+}
+
+export async function readAccounting(): Promise<ContractAccounting> {
+  return parseContractAccounting(await read("get_accounting"));
+}
+
 export async function readCampaign(id: number): Promise<Campaign | null> {
   if (!validCampaignId(id)) throw new Error("Campaign id must be a positive integer.");
   const result = await read("get_campaign", [id]);

@@ -8,7 +8,7 @@ async function transact(harness: ContractHarness, method: string, expected: Harn
   return writeAndConfirm(harness, { address: ADDRESS, functionName: method, args: [] }, async () => harness.readback(), (readback) => readback.state === expected, { readbackIntervalMs: 0, onStage: (stage) => stages.push(stage) });
 }
 
-describe("promoted campaign flow through the frontend transaction boundary", () => {
+describe("frontend transaction lifecycle with a deterministic unit harness", () => {
   it("creates, accepts, binds evidence, resolves, settles, and reads back each state", async () => {
     const harness = new ContractHarness(); const stages: TransactionStage[] = [];
     await transact(harness, "create_campaign", "OPEN", stages);

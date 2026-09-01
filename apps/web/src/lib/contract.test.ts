@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseGenToWei, recoveryAction, validateCreateCampaignInput, writeAndConfirm, type ContractClient } from "./contract";
+import { parseContractAccounting, parseGenToWei, recoveryAction, validateCreateCampaignInput, writeAndConfirm, type ContractClient } from "./contract";
 import type { Campaign } from "@proofofpost/shared";
 
 function client(receipt: unknown): ContractClient {
@@ -95,6 +95,30 @@ describe("parseGenToWei", () => {
   });
   it("rejects zero, negative, exponential, and over-precision values", () => {
     for (const value of ["0", "-1", "1e3", "1.0000000000000000001"]) expect(() => parseGenToWei(value)).toThrow();
+  });
+});
+
+describe("parseContractAccounting", () => {
+  const valid = {
+    total_inflows: "2000000000000000000",
+    active_escrow: 0n,
+    completed_payouts: "1000000000000000000",
+    completed_refunds: 1_000
+  };
+
+  it("preserves exact custody values from integer strings and bigint", () => {
+    expect(parseContractAccounting(valid)).toEqual({
+      totalInflows: 2_000_000_000_000_000_000n,
+      activeEscrow: 0n,
+      completedPayouts: 1_000_000_000_000_000_000n,
+      completedRefunds: 1_000n
+    });
+  });
+
+  it("rejects unsafe, fractional, negative, and malformed accounting", () => {
+    for (const value of [Number.MAX_SAFE_INTEGER + 1, 1.5, -1, "1.5", null]) {
+      expect(() => parseContractAccounting({ ...valid, total_inflows: value })).toThrow(/accounting/i);
+    }
   });
 });
 

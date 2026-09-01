@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:integration": "vitest run --mode integration src/lib/transaction-lifecycle.test.ts src/integration/studionet-live.test.ts"
   },
   "dependencies": {
     "@proofofpost/shared": "workspace:*",
