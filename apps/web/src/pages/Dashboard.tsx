@@ -4,8 +4,14 @@ import { useWallet } from "../lib/wallet";
 import { useAddressCampaigns } from "../hooks/useCampaigns";
 import type { Campaign } from "@proofofpost/shared";
 
+function custodyLabel(campaign: Campaign): string {
+  if (campaign.state === "REFUNDED") return `${campaign.amount.toString()} wei refunded to sponsor`;
+  if (campaign.state === "PAID") return `${campaign.amount.toString()} wei paid to creator`;
+  return `${campaign.amount.toString()} wei held by contract`;
+}
+
 function CampaignList({ title, campaigns }: { title: string; campaigns: Campaign[] }) {
-  return <section className="campaign-group"><h2>{title}</h2>{campaigns.length === 0 ? <p className="muted">No campaigns for this role.</p> : <div className="campaign-grid">{campaigns.map((campaign) => <Link to={`/campaigns/${campaign.id}`} className="campaign-card" key={campaign.id.toString()}><span className="eyebrow">#{campaign.id.toString()} · {campaign.state}</span><h3>{campaign.title}</h3><p>{campaign.amount.toString()} wei held by contract</p></Link>)}</div>}</section>;
+  return <section className="campaign-group"><h2>{title}</h2>{campaigns.length === 0 ? <p className="muted">No campaigns for this role.</p> : <div className="campaign-grid">{campaigns.map((campaign) => <Link to={`/campaigns/${campaign.id}`} className="campaign-card" key={campaign.id.toString()}><span className="eyebrow">#{campaign.id.toString()} · {campaign.state}</span><h3>{campaign.title}</h3><p>{custodyLabel(campaign)}</p></Link>)}</div>}</section>;
 }
 
 function LiveDashboard() {
