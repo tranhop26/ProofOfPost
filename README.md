@@ -62,7 +62,8 @@ Active verified Studionet successor:
 - Source hash: `sha256:9dafc26a869b8dc1e3511e5425086d7c5cf4ac43575eb98a32594b62dbe54368`
 - Manifest: `deployments/studionet-0x26775c839ea1d22bbb30959ab3ae8544023ef09b.json`
 - Vercel project: `TDH's projects/proof-of-post`
-- Verified production deployment: `dpl_9Lw3sfzpnYLeDLW2WWSz8i3b3ETW`
+- Production URL: [`https://proof-of-post.vercel.app`](https://proof-of-post.vercel.app)
+- Verified production successor: `dpl_6EmbMHvtWMy4YneWf8Vnb3A4E7PR` ([immutable URL](https://proof-of-post-pofvisyes-tdh-s-projects.vercel.app))
 
 The deployment reached `FINALIZED / SUCCESS / MAJORITY_AGREE`. Automated readback verified the exact source hash, all 14 schema methods, and zero initial balance. Two live 1 simulated GEN campaigns now cover both custody outcomes on this active address:
 
